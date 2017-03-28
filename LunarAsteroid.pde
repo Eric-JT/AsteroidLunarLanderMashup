@@ -64,20 +64,18 @@ void draw(){
   
   background(242,34,55);
   if (gravity.y == 0 && originPOS.y < height - 16){
+    // resets the gravity and velocity
       velocity.y = 0;
-    gravity.y = .02;
-      }
+      gravity.y = .02;
+  }
   renderSetup(); 
   renderShip();
   updateShip();
-  
   updateAstroid();
   renderAstroid();
-  
   arotatez += .5; // continuesly update the rotation of the asteroid
-  
   renderLandingPad();
-  
+  isLanded();
   screenWrap();
   
 }
@@ -145,6 +143,7 @@ void renderAstroid(){
 }
 
 void renderLandingPad(){
+  // create the landing pad
   lPad0 = new PVector(580,580 );
   lPad1 = new PVector(680,580);
   lPad2 = new PVector(580, height );
@@ -154,11 +153,11 @@ void renderLandingPad(){
   stroke(255);
   
  
-  // create the ship vector lines
-  line(lPad0.x, lPad0.y, lPad1.x, lPad1.y); // bottom left corner of the ship
-  line(lPad1.x, lPad1.y, lPad2.x, lPad2.y); // right side of the ship
-  line(lPad3.x, lPad3.y, lPad0.x, lPad0.y); // left side of the ship
-  //line(p2.x, p2.y, p0.x, p0.y); // bottom of the ship
+  // create the landing pad vector lines
+  line(lPad0.x, lPad0.y, lPad1.x, lPad1.y);
+  line(lPad1.x, lPad1.y, lPad2.x, lPad2.y); 
+  line(lPad3.x, lPad3.y, lPad0.x, lPad0.y); 
+  
 
 }
 
@@ -195,9 +194,7 @@ void renderShip(){
   y = thrust.y;
   thrust.x = -(x * cs + y * sn);
   thrust.y = -(x * sn - y * cs);
-  
-  
- 
+
   // end of ship rotation code
 
   // center the ship on the screen
@@ -254,74 +251,103 @@ void updateShip(){
 }
 
 void updateAstroid(){
+  // add gravity to the ship
   aOriginPOS.add(gravity);
   
 }
 
 // check if ship crashed
-void isCrashed(){
+boolean isCrashed(){
+  // check position of the ship
+  // check the orientation of the ship
+  // return a boolean for whether the ship has crashed 
   if (originPOS.y > (height - 35) && originPOS.x > lPad0.x && originPOS.x < lPad1.x){
+    // check if on landing pad
     if(rotatez <= 350.0 && rotatez >= 10.0 || rotatez >= -350.0 && rotatez <= -10.0) {
-      print("crashed");
-     
+      return true;
     }
   }
   
   if (originPOS.y > (height - 15) && originPOS.x < lPad0.x || originPOS.y > (height - 15)&& originPOS.x > lPad1.x){
-   if(rotatez <= 350.0 && rotatez >= 10.0 || rotatez >= -350.0 && rotatez <= -10.0) {print("crashed");}
+    // check if off landing pad
+   if(rotatez <= 350.0 && rotatez >= 10.0 || rotatez >= -350.0 && rotatez <= -10.0) {
+     return true; 
+   }
+  }
+  return false;
+}
+
+void isLanded(){
+  // Check ships position in relation to height of the screen minus 15px and whether the postion is on the landing pad
+  // Check if the ship has crashed
+  // inform the player if ship is crashed
+  // inform the player if the ship has landed corectly
+  if (originPOS.y > (height - 35) && originPOS.x > lPad0.x && originPOS.x < lPad1.x){
+    if (!isCrashed()){
+      textSize(32);
+      text("Win", originPOS.x, originPOS.y - 30); 
+      fill(0, 102, 153);
+      text("Win", originPOS.x, originPOS.y - 15);
+      fill(0, 102, 153, 51);
+      text("Win", originPOS.x, originPOS.y);
+    }
+    if (isCrashed()){
+      textSize(32);
+      textSize(32);
+      text("Crash", originPOS.x, originPOS.y - 30); 
+      fill(0, 102, 153);
+      text("Crash", originPOS.x, originPOS.y - 15);
+      fill(0, 102, 153, 51);
+      text("Crash", originPOS.x, originPOS.y);
+    }
+    originPOS.y = height - 35;
+    velocity.y *= 0;
+    gravity.y *= 0;
+  }
+  
+  // Check ships position in relation to height of the screen minus 15px and whether the postion is on the left or right side of the landing pad
+  // Check if the ship has crashed
+  // inform the player if ship is crashed
+  if (originPOS.y > (height - 15) && originPOS.x < lPad0.x || originPOS.y > (height - 15)&& originPOS.x > lPad1.x){
+    if (isCrashed()){
+      textSize(32);
+      text("Crash", originPOS.x, originPOS.y - 30); 
+      fill(0, 102, 153);
+      text("Crash", originPOS.x, originPOS.y - 15);
+      fill(0, 102, 153, 51);
+      text("Crash", originPOS.x, originPOS.y);
+    }
+    originPOS.y = height - 15;
+    velocity.y *= 0;
+    gravity.y *= 0;
   }
 }
 
 
 void screenWrap(){
   // screen wrap
-  if (originPOS.y > (height - 35) && originPOS.x > lPad0.x && originPOS.x < lPad1.x){
-    isCrashed();
-    originPOS.y = height - 35;
-    velocity.y *= 0;
-    gravity.y *= 0;
-  }
-  
-  if (originPOS.y > (height - 15) && originPOS.x < lPad0.x || originPOS.y > (height - 15)&& originPOS.x > lPad1.x){
-    isCrashed();
-    originPOS.y = height - 15;
-    velocity.y *= 0;
-    gravity.y *= 0;
-  }
-  
-  
+  // Check ships position in relation to height and width minus the height of the ship
   if (originPOS.y < (0 + shipHeight)){
     originPOS.y = 580;
   }
-  
-  
   if (originPOS.x > (width + shipHeight)){
     originPOS.x = 20;
   }
-  
-  
   if (originPOS.x < (0 + shipHeight)){
     originPOS.x = 780;
   }
   
   // screen wrap asteroid
+  // Check asteroids position in relation to height and width minus the height of the asteroids
   if (aOriginPOS.y > (height - aHeight)){
     aOriginPOS.y = 0;
-    
   }
-  
-  
   if (aOriginPOS.y < (0 + aHeight)){
     aOriginPOS.y = 580;
-    
   }
-  
-  
   if (aOriginPOS.x > (width + aHeight)){
     aOriginPOS.x = 20;
   }
-  
-  
   if (aOriginPOS.x < (0 + aHeight)){
     aOriginPOS.x = 780;
   }
@@ -330,29 +356,30 @@ void screenWrap(){
 
 void keyPressed(){
   
-  
   if (key == 'w'){
+    // Add Thrust
     thrust.y += -0.001;
   }
   else if (key == 's') {
+    // reverse Thrust
     thrust.y += 0.001;
   }
   else if (key == 'a'){
+    // Move Left
     thrust.x += -0.001;
   }
   else if (key == 'd'){
+    // Move Right
     thrust.x += 0.001; 
   }
   else if (key == 'q'){
-    print("\nbefore " + rotatez);
+    // Rotate Left
     rotatez -= 1.0;
-    print("\nafter "+ rotatez);
     if (rotatez < -360.0) rotatez = rotatez + 360.0;
   }
   else if (key == 'e'){
-    print("\nbefore " + rotatez);
+    // Rotate Right
     rotatez += 1.0;
-    print("\nafter "+ rotatez);
     if (rotatez > 360) rotatez = rotatez - 360;
   }
 }
